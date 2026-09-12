@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.meetclone</groupId>
+    <artifactId>meet-clone-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Google Meet Clone - Parent</name>
+    <description>Root parent module for 5 Google Meet clone microservices</description>
+
+    <modules>
+        <module>identity-service</module>
+        <module>meeting-service</module>
+        <module>signaling-service</module>
+        <module>recording-service</module>
+        <module>notification-service</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <spring.boot.version>3.2.4</spring.boot.version>
+        <spring.cloud.version>2023.0.1</spring.cloud.version>
+        <kurento.version>6.18.0</kurento.version>
+    </properties>
+</project>

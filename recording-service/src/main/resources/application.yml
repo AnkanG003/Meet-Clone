@@ -1,0 +1,21 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: recording-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/recording_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+aws:
+  s3:
+    bucket: ${S3_BUCKET:meet-recordings}
+    region: ${AWS_REGION:us-east-1}

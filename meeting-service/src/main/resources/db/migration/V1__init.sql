@@ -1,0 +1,28 @@
+-- Flyway: meetings, participants, chat_messages
+CREATE TABLE IF NOT EXISTS meetings (
+    id UUID PRIMARY KEY,
+    code VARCHAR(16) UNIQUE NOT NULL,
+    host_id UUID NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    scheduled_start TIMESTAMP WITH TIME ZONE,
+    scheduled_end TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(32) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS participants (
+    id UUID PRIMARY KEY,
+    meeting_id UUID NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL,
+    role VARCHAR(32) NOT NULL,
+    joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    left_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id UUID PRIMARY KEY,
+    meeting_id UUID NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
+    sender_id UUID NOT NULL,
+    content TEXT NOT NULL,
+    sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
