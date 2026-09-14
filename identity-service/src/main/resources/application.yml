@@ -5,21 +5,24 @@ spring:
   application:
     name: identity-service
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/identity_db}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/Meet-Clone-Identity-Service}
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD:2108@Das}
   jpa:
     hibernate:
       ddl-auto: validate   # Flyway owns schema
-    show-sql: true
+    show-sql: false
   flyway:
     enabled: true
     locations: classpath:db/migration
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+logging:
+  level:
+    root: INFO
+    com.meetclone.identity: INFO
+    org.apache.tomcat.util.http.parser.Cookie: OFF
+    org.hibernate: WARN
+    org.hibernate.SQL: WARN
 
 app:
   jwt:
@@ -27,6 +30,8 @@ app:
     access-token-ttl-minutes: 15
     refresh-token-ttl-days: 30
   oauth2:
+    frontend-redirect-uri: ${FRONTEND_REDIRECT_URI:http://localhost:3000/auth/callback}
     google:
-      client-id: ${GOOGLE_CLIENT_ID:}
-      client-secret: ${GOOGLE_CLIENT_SECRET:}
+      client-id: ${GOOGLE_CLIENT_ID:166975802292-gmle331v0b6cm7p8ss0f395pl2ebk0fv.apps.googleusercontent.com}
+      client-secret: ${GOOGLE_CLIENT_SECRET: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}
+      redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8081/auth/oauth/google/callback}
