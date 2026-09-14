@@ -2,7 +2,6 @@ package com.meetclone.identity.controller;
 
 import com.meetclone.identity.dto.UserProfileDto;
 import com.meetclone.identity.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,9 +13,12 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/{id}")
     public UserProfileDto get(@PathVariable UUID id) {

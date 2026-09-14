@@ -7,18 +7,30 @@ import com.meetclone.identity.event.UserEventPublisher;
 import com.meetclone.identity.repository.RefreshTokenRepository;
 import com.meetclone.identity.repository.UserRepository;
 import com.meetclone.identity.security.JwtTokenProvider;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserEventPublisher eventPublisher;
+
+    public AuthServiceImpl(
+            UserRepository userRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider,
+            UserEventPublisher eventPublisher
+    ) {
+        this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.eventPublisher = eventPublisher;
+    }
 
     @Override
     public LoginResponse register(RegisterRequest request) {

@@ -6,7 +6,6 @@ import com.meetclone.identity.dto.RegisterRequest;
 import com.meetclone.identity.service.AuthService;
 import com.meetclone.identity.service.OAuthService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,10 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
     private final OAuthService oAuthService;
+
+    public AuthController(AuthService authService, OAuthService oAuthService) {
+        this.authService = authService;
+        this.oAuthService = oAuthService;
+    }
 
     @PostMapping("/register")
     public LoginResponse register(@Valid @RequestBody RegisterRequest req) {
