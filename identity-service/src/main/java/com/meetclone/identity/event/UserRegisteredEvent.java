@@ -7,5 +7,5 @@ public record UserRegisteredEvent(
     UUID userId,
     String email,
     String name,
-    Instant timestamp
+    Instant occurredAt
 ) {}

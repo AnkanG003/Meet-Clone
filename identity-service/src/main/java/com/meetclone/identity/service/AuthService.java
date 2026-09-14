@@ -1,8 +1,11 @@
 package com.meetclone.identity.service;
 
-import org.springframework.stereotype.Service;
+import com.meetclone.identity.dto.LoginRequest;
+import com.meetclone.identity.dto.LoginResponse;
+import com.meetclone.identity.dto.RegisterRequest;
 
-@Service
-public class AuthService {
-    // password hashing, JWT issue/verify, refresh-token rotation
+public interface AuthService {
+    LoginResponse register(RegisterRequest request);
+    LoginResponse login(LoginRequest request);
+    LoginResponse refresh(String refreshToken);
 }

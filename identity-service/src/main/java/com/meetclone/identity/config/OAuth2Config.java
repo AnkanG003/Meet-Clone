@@ -4,5 +4,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OAuth2Config {
-    // Google OAuth2 client registration properties and handlers
+    // TODO: bind app.oauth2.google.* properties, expose a ClientRegistrationRepository or a plain RestTemplate-based exchanger
 }

@@ -7,5 +7,5 @@ public record UserUpdatedEvent(
     UUID userId,
     String name,
     String avatarUrl,
-    Instant timestamp
+    Instant occurredAt
 ) {}

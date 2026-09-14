@@ -1,8 +1,13 @@
 package com.meetclone.identity.service;
 
+import com.meetclone.identity.dto.LoginResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class OAuthService {
-    // Google auth-code exchange, links external identity to a User
+    public LoginResponse handleGoogleCallback(String authCode) {
+        throw new UnsupportedOperationException("TODO");
+    }
 }

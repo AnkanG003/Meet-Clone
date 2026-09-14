@@ -1,12 +1,13 @@
 package com.meetclone.identity.controller;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public class AuthControllerIT {
+@AutoConfigureMockMvc
+class AuthControllerIT {
+    // TODO: @Testcontainers Postgres, register/login happy path via MockMvc
     @Test
-    void contextLoads() {
-        // @SpringBootTest + Testcontainers Postgres
-    }
+    void contextLoads() {}
 }
