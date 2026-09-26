@@ -36,3 +36,14 @@ build/
 .DS_Store
 Thumbs.db
 *.log
+
+### Environment files ###
+# Ignore local secrets and runtime env values, but keep example templates tracked
+.env
+.env.*
+!.env.example
+!.env.docker.example
+!.env.*.example
+.env.local
+.env.*.local
+

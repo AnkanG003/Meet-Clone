@@ -1,0 +1,248 @@
+services:
+  # =============================================================
+  # 1. API GATEWAY & REVERSE PROXY (Nginx)
+  # =============================================================
+  gateway:
+    image: nginx:alpine
+    container_name: meet-gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - identity-service
+      - meeting-service
+      - signaling-service
+      - recording-service
+      - notification-service
+    networks:
+      - meet-network
+
+  # =============================================================
+  # 2. SPRING BOOT MICROSERVICES
+  # =============================================================
+  identity-service:
+    build:
+      context: ./identity-service
+      dockerfile: Dockerfile
+    container_name: meet-identity-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      IDENTITY_DB_URL: jdbc:postgresql://postgres:5432/identity_db
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      JWT_SECRET: ${JWT_SECRET:-your-256-bit-super-secret-key-that-is-at-least-32-characters-long}
+      JWT_ACCESS_TOKEN_TTL_MINUTES: ${JWT_ACCESS_TOKEN_TTL_MINUTES:-15}
+      JWT_REFRESH_TOKEN_TTL_DAYS: ${JWT_REFRESH_TOKEN_TTL_DAYS:-30}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx384m"
+      FRONTEND_REDIRECT_URI: ${FRONTEND_REDIRECT_URI:-http://localhost/auth/callback}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost/auth/oauth/google/callback}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - meet-network
+
+  meeting-service:
+    build:
+      context: ./meeting-service
+      dockerfile: Dockerfile
+    container_name: meet-meeting-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/meeting_db
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SIGNALING_SERVICE_URL: http://signaling-service:8083
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx384m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - meet-network
+
+  signaling-service:
+    build:
+      context: ./signaling-service
+      dockerfile: Dockerfile
+    container_name: meet-signaling-service
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KURENTO_WS_URL: ws://kurento:8888/kurento
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx384m"
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kurento:
+        condition: service_started
+    networks:
+      - meet-network
+
+  recording-service:
+    build:
+      context: ./recording-service
+      dockerfile: Dockerfile
+    container_name: meet-recording-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/recording_db
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      S3_BUCKET: ${S3_BUCKET:-meet-recordings}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx384m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kurento:
+        condition: service_started
+    networks:
+      - meet-network
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: meet-notification-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/notification_db
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SIGNALING_SERVICE_URL: http://signaling-service:8083
+      MAIL_HOST: ${MAIL_HOST:-smtp.mailtrap.io}
+      MAIL_PORT: ${MAIL_PORT:-2525}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx384m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - meet-network
+
+  # =============================================================
+  # 3. BACKING INFRASTRUCTURE
+  # =============================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: meet-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - meet-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: meet-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - meet-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: meet-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_JVM_PERFORMANCE_OPTS: "-Xms256m -Xmx512m"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-cluster cluster-id --bootstrap-server localhost:9092 || exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - meet-network
+
+  kurento:
+    image: kurento/kurento-media-server:6.18.0
+    container_name: meet-kurento
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+      - "5000-5050:5000-5050/udp"
+    networks:
+      - meet-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  kafka_data:
+
+networks:
+  meet-network:
+    name: meet-network
+    driver: bridge

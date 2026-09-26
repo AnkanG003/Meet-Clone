@@ -1,0 +1,9 @@
+**/.git
+**/.gitignore
+**/.vscode
+**/.idea
+**/target
+**/*.class
+**/*.log
+**/.env
+docker/postgres/data
