@@ -47,3 +47,6 @@ Thumbs.db
 .env.local
 .env.*.local
 
+### Scratch / Try folder ###
+try/
+

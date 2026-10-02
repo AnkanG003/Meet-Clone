@@ -48,7 +48,8 @@ class AuthServiceTest {
     @BeforeEach
     void setUp() {
         jwtTokenProvider = new JwtTokenProvider(
-                "super-secret-key-that-is-at-least-256-bits-long-for-testing-purpose",
+                "super-secret-access-key-that-is-at-least-256-bits-long-for-testing",
+                "super-secret-refresh-key-that-is-at-least-256-bits-long-for-testing",
                 15,
                 30
         );
@@ -75,8 +76,10 @@ class AuthServiceTest {
         assertNotNull(response.accessToken());
         assertNotNull(response.refreshToken());
 
-        assertTrue(jwtTokenProvider.validate(response.accessToken()));
-        assertTrue(jwtTokenProvider.validate(response.refreshToken()));
+        assertTrue(jwtTokenProvider.validateAccessToken(response.accessToken()));
+        assertTrue(jwtTokenProvider.validateRefreshToken(response.refreshToken()));
+        assertFalse(jwtTokenProvider.validateAccessToken(response.refreshToken()));
+        assertFalse(jwtTokenProvider.validateRefreshToken(response.accessToken()));
 
         verify(userRepository).save(any(User.class));
         verify(refreshTokenRepository).save(any(RefreshToken.class));

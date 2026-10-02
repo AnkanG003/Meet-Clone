@@ -123,7 +123,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public LoginResponse refresh(String refreshToken) {
-        if (!jwtTokenProvider.validate(refreshToken)) {
+        if (!jwtTokenProvider.validateRefreshToken(refreshToken)) {
             throw new InvalidCredentialsException("Invalid or expired refresh token");
         }
 

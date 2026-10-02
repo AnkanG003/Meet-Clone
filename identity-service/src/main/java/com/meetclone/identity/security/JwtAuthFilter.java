@@ -25,6 +25,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/auth/") || path.equals("/health") || path.equals("/error");
+    }
+
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -34,8 +40,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            if (jwtTokenProvider.validate(token)) {
-                UUID userId = jwtTokenProvider.getUserId(token);
+            if (jwtTokenProvider.validateAccessToken(token)) {
+                UUID userId = jwtTokenProvider.getUserIdFromAccessToken(token);
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

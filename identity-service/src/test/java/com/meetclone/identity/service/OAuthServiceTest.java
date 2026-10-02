@@ -51,7 +51,8 @@ class OAuthServiceTest {
     @BeforeEach
     void setUp() {
         jwtTokenProvider = new JwtTokenProvider(
-                "super-secret-key-that-is-at-least-256-bits-long-for-testing-purpose",
+                "super-secret-access-key-that-is-at-least-256-bits-long-for-testing",
+                "super-secret-refresh-key-that-is-at-least-256-bits-long-for-testing",
                 15,
                 30
         );

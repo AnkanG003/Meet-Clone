@@ -35,6 +35,8 @@ services:
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-your-256-bit-super-secret-access-key-that-is-at-least-32-chars}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-256-bit-super-secret-refresh-key-that-is-at-least-32-chars}
       JWT_SECRET: ${JWT_SECRET:-your-256-bit-super-secret-key-that-is-at-least-32-characters-long}
       JWT_ACCESS_TOKEN_TTL_MINUTES: ${JWT_ACCESS_TOKEN_TTL_MINUTES:-15}
       JWT_REFRESH_TOKEN_TTL_DAYS: ${JWT_REFRESH_TOKEN_TTL_DAYS:-30}
